@@ -1,6 +1,6 @@
 cask "mac-scripts" do
-  version "0.0.0"
-  sha256 :no_check
+  version "1.1.0"
+  sha256 "7f43e39391c9a59cca141d9ba306940e3fa8e153c5eecf1f150ab76584cbfb29"
 
   url "https://github.com/centralhardware/homebrew-mac-scripts/releases/download/v#{version}/mac-scripts-v#{version}.pkg"
   name "mac-scripts"
