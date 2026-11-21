@@ -1,0 +1,52 @@
+#!/bin/bash
+# working in front -> remember the active tunnels, switch to wg1.
+# Leaving working  -> restore what was active before.
+export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+RUN=/var/run/wireguard
+STATE=/var/db/wg-user-switch
+mkdir -p "$STATE"
+
+log() { echo "$(date '+%F %T') $*"; }
+
+active() {
+  for f in "$RUN"/*.name; do
+    [ -e "$f" ] || continue
+    p=$(basename "$f" .name); i=$(cat "$f")
+    s="$RUN/$i.sock"
+    d=$(( $(stat -f %m "$s" 2>/dev/null || echo 0) - $(stat -f %m "$f") ))
+    if [ -S "$s" ] && [ $d -gt -2 ] && [ $d -lt 2 ]; then
+      echo "$p"
+    else
+      rm -f "$f"   # stale: never touch the sock, it may belong to another tunnel
+    fi
+  done
+}
+
+# Make exactly the given tunnels active (none = all off).
+set_active() {
+  live=$(active)
+  for p in $live; do
+    case " $* " in *" $p "*) ;; *) log "down $p"; wg-quick down "$p" ;; esac
+  done
+  for p in "$@"; do
+    case " $live " in *" $p "*) ;; *) log "up $p"; wg-quick up "$p" ;; esac
+  done
+}
+
+user=$(stat -f %Su /dev/console)
+case "$user" in ""|root|loginwindow) exit 0 ;; esac
+
+last=$(cat "$STATE/user" 2>/dev/null)
+[ "$user" = "$last" ] && exit 0          # no user switch, nothing to do
+echo "$user" > "$STATE/user"
+
+if [ "$user" = working ]; then
+  active | tr '\n' ' ' > "$STATE/saved"
+  log "working in front, saved: $(cat "$STATE/saved")"
+  set_active wg1
+elif [ "$last" = working ]; then
+  saved=$(cat "$STATE/saved" 2>/dev/null)
+  log "$user in front, restoring: ${saved:-nothing}"
+  set_active $saved
+fi
+

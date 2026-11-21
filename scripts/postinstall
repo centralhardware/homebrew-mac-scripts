@@ -1,0 +1,17 @@
+#!/bin/bash
+# Runs as root after the pkg lays files down. (Re)load every daemon/agent we ship.
+chown root:wheel /Library/LaunchDaemons/me.*.plist /Library/LaunchAgents/me.*.plist
+chmod 644 /Library/LaunchDaemons/me.*.plist /Library/LaunchAgents/me.*.plist
+for p in /usr/local/share/mac-scripts/daemons/*.plist; do
+  l=$(basename "$p" .plist)
+  launchctl bootout system/"$l" 2>/dev/null
+  launchctl bootstrap system /Library/LaunchDaemons/"$l".plist
+done
+# Fish functions for every real user that has fish config
+for h in /Users/*; do
+  u=$(basename "$h"); [ -d "$h/.config/fish" ] || continue
+  mkdir -p "$h/.config/fish/functions"
+  cp /usr/local/share/mac-scripts/fish/*.fish "$h/.config/fish/functions/"
+  chown -R "$u" "$h/.config/fish/functions"
+done
+exit 0

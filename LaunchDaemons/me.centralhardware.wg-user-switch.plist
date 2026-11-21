@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>me.centralhardware.wg-user-switch</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>/usr/local/bin/wg-user-switch</string>
+    </array>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    </dict>
+
+    <!-- fires when the console user changes -->
+    <key>WatchPaths</key>
+    <array>
+        <string>/Library/Preferences/com.apple.loginwindow.plist</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+
+    <!-- THE FIX: don't kill wireguard-go when the script exits -->
+    <key>AbandonProcessGroup</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>/var/log/wg-user-switch.log</string>
+    <key>StandardErrorPath</key>
+    <string>/var/log/wg-user-switch.log</string>
+</dict>
+</plist>
+
