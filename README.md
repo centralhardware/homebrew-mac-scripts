@@ -15,7 +15,6 @@ Push a tag `vX.Y.Z` → GitHub Actions builds `mac-scripts-vX.Y.Z.pkg` and attac
 
 ## First install (once)
 Download the pkg from the latest release and `sudo installer -pkg mac-scripts-*.pkg -target /`.
-Repo is private, so the updater needs a read-only token:
-`sudo mkdir -p /usr/local/etc/mac-scripts && sudo sh -c 'echo <fine-grained PAT, contents:read> > /usr/local/etc/mac-scripts/token' && sudo chmod 600 /usr/local/etc/mac-scripts/token`
+The repo is public, so the updater needs no token (an optional one in `/usr/local/etc/mac-scripts/token` is used if present, e.g. to dodge API rate limits).
 
 WireGuard configs (`/etc/wireguard`, or `/opt/homebrew/etc/wireguard`) hold keys and stay out of this repo.
