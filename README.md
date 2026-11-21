@@ -9,9 +9,14 @@ Login-time automation for the MacBook, shipped as a `.pkg`.
 | `me.focus.off` agent | at login of any user except `working`, runs the "Work Focus Off" shortcut |
 | `wgup` / `wgdown` fish functions | swap between wg0 and wg1 by hand |
 
-## Release
-Push a tag `vX.Y.Z` → GitHub Actions builds `mac-scripts-vX.Y.Z.pkg` and attaches it to a release. 
+## Install
+```
+brew install --cask centralhardware/mac-scripts/mac-scripts
+```
+Updates come with `brew upgrade` (asks for sudo, reinstalls the pkg, reloads the daemons).
+`brew uninstall --cask mac-scripts` unloads everything and removes the files.
 
-## First install (once)
-Download the pkg from the latest release and `sudo installer -pkg mac-scripts-*.pkg -target /`.
+## Release
+Push a tag `vX.Y.Z` → GitHub Actions builds `mac-scripts-vX.Y.Z.pkg`, attaches it to a release, and bumps `Casks/mac-scripts.rb`.
+
 WireGuard configs (`/etc/wireguard`, or `/opt/homebrew/etc/wireguard`) hold keys and stay out of this repo.

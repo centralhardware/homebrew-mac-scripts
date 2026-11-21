@@ -1,0 +1,18 @@
+cask "mac-scripts" do
+  version "0.0.0"
+  sha256 :no_check
+
+  url "https://github.com/centralhardware/homebrew-mac-scripts/releases/download/v#{version}/mac-scripts-v#{version}.pkg"
+  name "mac-scripts"
+  desc "Login automation: per-user timezone, WireGuard switch, Focus off"
+  homepage "https://github.com/centralhardware/homebrew-mac-scripts"
+
+  pkg "mac-scripts-v#{version}.pkg"
+
+  uninstall launchctl: [
+              "me.tz-per-user",
+              "me.centralhardware.wg-user-switch",
+              "me.focus.off",
+            ],
+            pkgutil:   "me.centralhardware.mac-scripts"
+end
