@@ -1,6 +1,7 @@
 #!/bin/bash
-# On every login or user switch, for any user: make the tunnels from
-# /etc/mac-scripts.conf (WG_TUNNELS="wg1", space separated; empty = none) the only active ones.
+# On every login or user switch, for any user: make the tunnels listed for that user in
+# /etc/mac-scripts.conf the only active ones ("user: tunnel tunnel"; "*" = everyone else;
+# nothing after the colon = no tunnels; user not listed = leave tunnels alone).
 # A config edit is applied within 10 s.
 # Tunnels changed by hand afterwards are left alone until the next switch.
 export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
@@ -40,9 +41,15 @@ case "$user" in
   ""|root|loginwindow|_mbsetupuser) rm -f "$STATE/user"; exit 0 ;;   # login screen: the next login counts as a switch
 esac
 
-WG_TUNNELS=wg1
-[ -r /etc/mac-scripts.conf ] && . /etc/mac-scripts.conf
-want=$(printf '%s\n' $WG_TUNNELS | sort -u | xargs)
+CONF=${CONF:-/etc/mac-scripts.conf}
+# The user's own line wins over "*"; exit 1 = neither is there.
+line=$(awk -F: -v u="$user" '
+  { sub(/#.*/, ""); k = $1; gsub(/[ \t]/, "", k) }
+  NF < 2 { next }
+  k == u   { own = $2; o = 1 }
+  k == "*" { any = $2; a = 1 }
+  END { if (o) print own; else if (a) print any; else exit 1 }' "$CONF") || exit 0
+want=$(echo "$line" | tr -s ' \t' '\n' | grep . | sort -u | xargs)
 
 # no user switch and no config change: nothing to do
 [ "$user: $want" = "$(cat "$STATE/user" 2>/dev/null)" ] && exit 0
