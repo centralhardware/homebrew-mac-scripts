@@ -1,0 +1,24 @@
+#!/bin/bash
+# Work Focus follows the session of `working`: on at login, off at logout.
+# launchd starts this at login and sends SIGTERM at logout (also restart / shutdown).
+# Fast user switching is neither a login nor a logout.
+[ "$(id -un)" = working ] || exit 0   # the agent is loaded for every user
+
+focus_off() {
+  trap '' TERM
+  kill "$pid" 2>/dev/null
+  /usr/bin/shortcuts run "Work Focus Off"
+  rc=$?
+  logger -t work-focus "off: exit $rc"
+  exit "$rc"
+}
+trap focus_off TERM
+
+/usr/bin/shortcuts run "Work Focus" & pid=$!
+wait "$pid"
+logger -t work-focus "on: exit $?"
+
+while :; do
+  sleep 86400 & pid=$!
+  wait "$pid"
+done

@@ -6,11 +6,7 @@
   <string>me.focus.off</string>
   <key>ProgramArguments</key>
   <array>
-    <string>/usr/local/bin/run-on-logout</string>
-    <string>working</string>
-    <string>/usr/bin/shortcuts</string>
-    <string>run</string>
-    <string>Work Focus Off</string>
+    <string>/usr/local/bin/work-focus</string>
   </array>
   <key>RunAtLoad</key>
   <true/>
