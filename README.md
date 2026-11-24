@@ -6,7 +6,7 @@ Login-time automation for the MacBook, shipped as a `.pkg`.
 |---|---|
 | `tz-per-user.sh` + `me.tz-per-user` daemon | every 10 s sets the system timezone from the console user (`working` → Europe/Podgorica, `alex` → Asia/Kuala_Lumpur) |
 | `wg-user-switch` + daemon | on user switch: `working` gets only `wg1`; leaving `working` restores the previous tunnels |
-| `me.focus.off` agent | at login of any user except `working`, runs the "Work Focus Off" shortcut |
+| `me.focus.off` agent | in `working`: runs the "Work Focus" shortcut at login and "Work Focus Off" at logout (also restart / shutdown; not fast user switching) |
 | `wgup` / `wgdown` fish functions | swap between wg0 and wg1 by hand |
 
 ## Install
