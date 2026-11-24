@@ -6,6 +6,7 @@ root=$(mktemp -d)
 install -d "$root/usr/local/bin" "$root/Library/LaunchDaemons" "$root/Library/LaunchAgents" \
   "$root/usr/local/share/mac-scripts/daemons" "$root/usr/local/share/mac-scripts/fish"
 install -m 755 bin/* "$root/usr/local/bin/"
+swiftc -O -swift-version 5 -target arm64-apple-macos13 src/run-on-logout.swift -o "$root/usr/local/bin/run-on-logout"
 install -m 644 LaunchDaemons/*.plist "$root/Library/LaunchDaemons/"
 install -m 644 LaunchDaemons/*.plist "$root/usr/local/share/mac-scripts/daemons/"
 install -m 644 LaunchAgents/*.plist "$root/Library/LaunchAgents/"
