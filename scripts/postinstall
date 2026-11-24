@@ -7,6 +7,8 @@ for p in /usr/local/share/mac-scripts/daemons/*.plist; do
   launchctl bootout system/"$l" 2>/dev/null
   launchctl bootstrap system /Library/LaunchDaemons/"$l".plist
 done
+# Config: created once, never overwritten by upgrades
+[ -e /etc/mac-scripts.conf ] || echo 'WG_TUNNELS="wg1"   # tunnels to keep up, space separated' > /etc/mac-scripts.conf
 # Fish functions for every real user that has fish config
 for h in /Users/*; do
   u=$(basename "$h"); [ -d "$h/.config/fish" ] || continue
