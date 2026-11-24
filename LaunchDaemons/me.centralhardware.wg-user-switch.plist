@@ -22,6 +22,9 @@
     <array>
         <string>/Library/Preferences/com.apple.loginwindow.plist</string>
     </array>
+    <!-- at login the plist can change before the console owner does, so poll as well -->
+    <key>StartInterval</key>
+    <integer>10</integer>
     <key>RunAtLoad</key>
     <true/>
 
