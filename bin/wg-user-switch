@@ -1,5 +1,8 @@
 #!/bin/bash
-# On every login or user switch, for any user: make wg1 the only active tunnel.
+# On every login or user switch, for any user: make the tunnels listed for that user in
+# /etc/mac-scripts.conf the only active ones ("user: tunnel tunnel"; "*" = everyone else;
+# nothing after the colon = no tunnels; user not listed = leave tunnels alone).
+# A config edit is applied within 10 s.
 # Tunnels changed by hand afterwards are left alone until the next switch.
 export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 RUN=/var/run/wireguard
@@ -24,7 +27,7 @@ active() {
 
 # Make exactly the given tunnels active (none = all off).
 set_active() {
-  live=$(active)
+  live=$(active | xargs)
   for p in $live; do
     case " $* " in *" $p "*) ;; *) log "down $p"; wg-quick down "$p" ;; esac
   done
@@ -38,10 +41,21 @@ case "$user" in
   ""|root|loginwindow|_mbsetupuser) rm -f "$STATE/user"; exit 0 ;;   # login screen: the next login counts as a switch
 esac
 
-[ "$user" = "$(cat "$STATE/user" 2>/dev/null)" ] && exit 0   # no user switch, nothing to do
+CONF=${CONF:-/etc/mac-scripts.conf}
+# The user's own line wins over "*"; exit 1 = neither is there.
+line=$(awk -F: -v u="$user" '
+  { sub(/#.*/, ""); k = $1; gsub(/[ \t]/, "", k) }
+  NF < 2 { next }
+  k == u   { own = $2; o = 1 }
+  k == "*" { any = $2; a = 1 }
+  END { if (o) print own; else if (a) print any; else exit 1 }' "$CONF") || exit 0
+want=$(echo "$line" | tr -s ' \t' '\n' | grep . | sort -u | xargs)
 
-log "$user in front, switching to wg1"
-set_active wg1
-# Remember the user only once wg1 is the only tunnel, so a failure is retried on the next run.
-[ "$(active)" = wg1 ] && echo "$user" > "$STATE/user"
+# no user switch and no config change: nothing to do
+[ "$user: $want" = "$(cat "$STATE/user" 2>/dev/null)" ] && exit 0
+
+log "$user in front, switching to: ${want:-no tunnels}"
+set_active $want
+# Remember the switch only once it fully worked, so a failure is retried on the next run.
+[ "$(active | sort | xargs)" = "$want" ] && echo "$user: $want" > "$STATE/user"
 exit 0

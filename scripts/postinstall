@@ -7,6 +7,14 @@ for p in /usr/local/share/mac-scripts/daemons/*.plist; do
   launchctl bootout system/"$l" 2>/dev/null
   launchctl bootstrap system /Library/LaunchDaemons/"$l".plist
 done
+# Config: created once, never overwritten by upgrades
+[ -e /etc/mac-scripts.conf ] || cat > /etc/mac-scripts.conf <<'EOF'
+# WireGuard tunnels to keep up while a user is in front, space separated.
+# "*" is everyone not listed. Edits apply within 10 s.
+working: wg1
+alex: wg0
+*: wg1
+EOF
 # Fish functions for every real user that has fish config
 for h in /Users/*; do
   u=$(basename "$h"); [ -d "$h/.config/fish" ] || continue
