@@ -2,7 +2,7 @@
 # On every login or user switch, for any user: make the tunnels listed for that user in
 # /etc/mac-scripts.conf the only active ones ("user: tunnel tunnel"; "*" = everyone else;
 # nothing after the colon = no tunnels; user not listed = leave tunnels alone).
-# A config edit is applied within 10 s.
+# A config edit applies from the next login or switch.
 # Tunnels changed by hand afterwards are left alone until the next switch.
 export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 RUN=/var/run/wireguard
@@ -41,6 +41,10 @@ case "$user" in
   ""|root|loginwindow|_mbsetupuser) rm -f "$STATE/user"; exit 0 ;;   # login screen: the next login counts as a switch
 esac
 
+# Once per login or switch: anything changed by hand later is left alone.
+[ "$user" = "$(cat "$STATE/user" 2>/dev/null)" ] && exit 0
+echo "$user" > "$STATE/user"
+
 CONF=${CONF:-/etc/mac-scripts.conf}
 # The user's own line wins over "*"; exit 1 = neither is there.
 line=$(awk -F: -v u="$user" '
@@ -51,11 +55,12 @@ line=$(awk -F: -v u="$user" '
   END { if (o) print own; else if (a) print any; else exit 1 }' "$CONF") || exit 0
 want=$(echo "$line" | tr -s ' \t' '\n' | grep . | sort -u | xargs)
 
-# no user switch and no config change: nothing to do
-[ "$user: $want" = "$(cat "$STATE/user" 2>/dev/null)" ] && exit 0
-
 log "$user in front, switching to: ${want:-no tunnels}"
-set_active $want
-# Remember the switch only once it fully worked, so a failure is retried on the next run.
-[ "$(active | sort | xargs)" = "$want" ] && echo "$user: $want" > "$STATE/user"
+# The network may not be up yet right after login, so try a few times, then give up.
+for try in 1 2 3 4 5; do
+  set_active $want
+  [ "$(active | sort | xargs)" = "$want" ] && break
+  sleep 5
+  [ "$(stat -f %Su /dev/console)" = "$user" ] || break
+done
 exit 0
