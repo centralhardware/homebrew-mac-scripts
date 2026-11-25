@@ -2,6 +2,9 @@
 # Runs as root after the pkg lays files down. (Re)load every daemon/agent we ship.
 chown root:wheel /Library/LaunchDaemons/me.*.plist /Library/LaunchAgents/me.*.plist
 chmod 644 /Library/LaunchDaemons/me.*.plist /Library/LaunchAgents/me.*.plist
+# Installing is not a login: leave the tunnels of whoever is in front alone
+mkdir -p /var/run/wg-user-switch
+stat -f %Su /dev/console > /var/run/wg-user-switch/user
 for p in /usr/local/share/mac-scripts/daemons/*.plist; do
   l=$(basename "$p" .plist)
   launchctl bootout system/"$l" 2>/dev/null
@@ -10,7 +13,7 @@ done
 # Config: created once, never overwritten by upgrades
 [ -e /etc/mac-scripts.conf ] || cat > /etc/mac-scripts.conf <<'EOF'
 # WireGuard tunnels to keep up while a user is in front, space separated.
-# "*" is everyone not listed. Edits apply within 10 s.
+# "*" is everyone not listed. Applied once, at login or user switch.
 working: wg1
 alex: wg0
 *: wg1
