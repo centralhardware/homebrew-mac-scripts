@@ -11,7 +11,7 @@
   <key>RunAtLoad</key>
   <true/>
   <key>ExitTimeOut</key>
-  <integer>15</integer>
+  <integer>30</integer>
 </dict>
 </plist>
 
